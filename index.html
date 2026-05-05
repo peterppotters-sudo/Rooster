@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Ploegen Rooster</title>
     <style>
         :root {
@@ -15,72 +15,116 @@
             --c-o: #5d4037; --c-m: #1565c0; --c-n: #4527a0;
             --t-o: #ffe082; --t-m: #bbdefb; --t-n: #d1c4e9;
         }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--on-surf); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg); color: var(--on-surf); 
+            margin: 0; display: flex; flex-direction: column; 
+            height: 100vh; height: -webkit-fill-available; overflow: hidden; 
+        }
         
-        header { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--surf); box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 20; flex-shrink: 0; }
-        .content { flex: 1; overflow-y: scroll; padding: 8px; -webkit-overflow-scrolling: touch; }
+        /* Content area met padding voor de onderste balk */
+        .content { 
+            flex: 1; overflow-y: scroll; padding: 12px 12px 140px 12px; 
+            -webkit-overflow-scrolling: touch; 
+        }
         
-        .card { background: var(--surf); border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
-        
+        /* Kaart styling */
+        .card { background: var(--surf); border-radius: 12px; padding: 0 16px; margin-bottom: 8px; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); min-height: 65px; }
+        .c-left { flex: 1.2; font-size: 15px; font-weight: 800; }
+        .c-mid { flex: 1.5; font-size: 14px; font-weight: 700; text-align: center; }
+        .c-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; }
+
         .hl-o { background-color: var(--c-o) !important; color: var(--t-o) !important; }
         .hl-m { background-color: var(--c-m) !important; color: var(--t-m) !important; }
         .hl-n { background-color: var(--c-n) !important; color: var(--t-n) !important; }
         
-        .today-highlight { border: 2.5px solid #34495e !important; }
+        .today-highlight { border: 3px solid #2c3e50 !important; }
         [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
 
-        .badge { padding: 6px 12px; border-radius: 6px; font-weight: bold; text-transform: uppercase; font-size: 12px; }
-        .shift-row { display: flex; gap: 4px; font-weight: 800; font-size: 15px; align-items: center; justify-content: center; width: 100%; }
-        
-        .s-box { position: relative; width: 1.6em; height: 1.6em; display: flex; align-items: center; justify-content: center; z-index: 1; }
-        .s-o { color: #e67e22; } .s-m { color: #2980b9; } .s-n { color: #8e44ad; }
-
+        .badge { padding: 6px 10px; border-radius: 8px; font-weight: 900; text-transform: uppercase; font-size: 11px; background: rgba(0,0,0,0.06); }
+        .shift-row { display: flex; gap: 4px; font-weight: 800; }
+        .s-box { width: 1.8em; height: 1.8em; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
         .dot-hl::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; z-index: -1; top: 0; left: 0; }
         .dot-o::before { background-color: var(--c-o); }
         .dot-m::before { background-color: var(--c-m); }
         .dot-n::before { background-color: var(--c-n); }
 
         .month-header { padding: 20px 0 8px 4px; font-weight: bold; color: var(--prim); font-size: 1.1em; border-bottom: 2px solid var(--prim); margin-top: 8px; text-transform: uppercase; }
-        .grid-main { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; }
-        .day-cell { background: var(--surf); min-height: 55px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); padding: 4px 0; }
-        .day-num { font-size: 12px; margin-bottom: 2px; font-weight: bold; opacity: 0.7; }
+        .grid-main { display: grid; grid-template-columns: 30px repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; text-align: center; }
+        .grid-label { font-size: 10px; font-weight: bold; opacity: 0.5; }
+        .week-num { font-size: 10px; font-weight: bold; opacity: 0.4; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); }
+        .day-cell { background: var(--surf); min-height: 60px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .day-num { font-size: 12px; font-weight: bold; opacity: 0.7; }
 
-        #todayBtn { position: fixed; bottom: 85px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; font-size: 13px; }
+        /* Floating Today Button */
+        #todayBtn { position: fixed; bottom: 135px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 50px; padding: 10px 20px; font-weight: bold; z-index: 90; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 12px; }
 
-        nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: #2c3e50; display: flex; z-index: 20; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; opacity: 0.6; color: white; text-decoration: none; }
-        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); border-top: 3px solid #ecf0f1; }
+        /* Bottom Controls Container */
+        .bottom-nav-container {
+            position: fixed; bottom: 0; width: 100%;
+            background: #2c3e50; z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Top row of bottom nav: Select & Theme */
+        .controls-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 16px; background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Bottom row: Navigation */
+        .nav-row { display: flex; height: 60px; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: white; opacity: 0.6; cursor: pointer; }
+        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); }
         .nav-icon { font-size: 18px; margin-bottom: 2px; }
         
-        select { background: var(--surf); color: var(--on-surf); border: 1px solid #ccc; padding: 6px; border-radius: 6px; font-size: 15px; font-weight: bold; outline: none; }
+        select { 
+            background: #3e5871; color: white; border: none; 
+            padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 14px;
+            outline: none; -webkit-appearance: none;
+        }
+        .theme-toggle { background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px; }
     </style>
 </head>
 <body onload="init()">
 
-<header>
-    <select id="ploegSelect" onchange="render()">
-        <option value="1">Ploeg 1</option><option value="2">Ploeg 2</option><option value="3">Ploeg 3</option><option value="4" selected>Ploeg 4</option><option value="5">Ploeg 5</option>
-    </select>
-    <div style="font-weight: 900; color: #2c3e50;">ROOSTER</div>
-    <button onclick="toggleTheme()" style="background:none; border:none; font-size:20px;">🌓</button>
-</header>
+<div class="content" id="viewer"></div>
 
 <button id="todayBtn" onclick="scrollToToday('smooth')">VANDAAG</button>
 
-<div class="content" id="viewer"></div>
-
-<nav>
-    <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')"><span class="nav-icon">📅</span>Week</div>
-    <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')"><span class="nav-icon">👥</span>W-Alle</div>
-    <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')"><span class="nav-icon">🗓️</span>Maand</div>
-    <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')"><span class="nav-icon">📊</span>M-Alle</div>
-</nav>
+<div class="bottom-nav-container">
+    <!-- Controls Rij -->
+    <div class="controls-row">
+        <select id="ploegSelect" onchange="render()">
+            <option value="1">Ploeg 1</option>
+            <option value="2">Ploeg 2</option>
+            <option value="3">Ploeg 3</option>
+            <option value="4" selected>Ploeg 4</option>
+            <option value="5">Ploeg 5</option>
+        </select>
+        <div style="color: white; font-weight: 900; letter-spacing: 1px; font-size: 14px;">ROOSTER</div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    </div>
+    
+    <!-- Navigatie Rij -->
+    <div class="nav-row">
+        <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')"><span class="nav-icon">📅</span>Week</div>
+        <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')"><span class="nav-icon">👥</span>W-Alle</div>
+        <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')"><span class="nav-icon">🗓️</span>Maand</div>
+        <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')"><span class="nav-icon">📊</span>M-Alle</div>
+    </div>
+</div>
 
 <script>
     let curView = 'week-ind';
     const REF = new Date(2026, 4, 5); 
     const OFFSETS = { "1": 28, "2": 7, "3": 21, "4": 0, "5": 14 };
+    const TIMES = { o: '06:30 - 15:30', m: '15:30 - 23:30', n: '23:30 - 06:30', v: '' };
+    const NAMES = { o: 'Ochtend', m: 'Middag', n: 'Nacht', v: '' };
+
     const cycle = [];
     const add = (n, t) => { for(let i=0; i<n; i++) cycle.push(t); };
     add(4,'o'); add(2,'v'); add(3,'m'); add(1,'v'); add(4,'n'); add(4,'v');
@@ -93,6 +137,14 @@
         return cycle[idx < 0 ? idx + 35 : idx];
     }
 
+    function getWeekNumber(d) {
+        let date = new Date(d.getTime());
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+        let week1 = new Date(date.getFullYear(), 0, 4);
+        return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+
     function render() {
         const container = document.getElementById('viewer');
         const selP = document.getElementById('ploegSelect').value;
@@ -101,7 +153,7 @@
         
         const startDate = new Date(); startDate.setFullYear(startDate.getFullYear() - 1);
         const endDate = new Date(); endDate.setFullYear(endDate.getFullYear() + 1);
-        const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
+        const months = ["Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
         const dayNames = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
 
         let lastMonth = -1;
@@ -109,30 +161,48 @@
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const isToday = d.toDateString() === todayStr;
             const shift = getS(selP, d);
-            const hlClass = (curView.includes('ind')) ? `hl-${shift}` : '';
+            const hlClass = (curView.includes('ind') && shift !== 'v') ? `hl-${shift}` : '';
             const todayClass = isToday ? 'today-highlight' : '';
             const todayId = isToday ? 'id="today"' : '';
 
             if (d.getMonth() !== lastMonth && curView.includes('month')) {
                 if (lastMonth !== -1) html += `</div>`;
                 html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
+                ['W','M','D','W','D','V','Z','Z'].forEach(l => html += `<div class="grid-label">${l}</div>`);
                 let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
                 let padding = firstDay === 0 ? 6 : firstDay - 1;
-                for(let p=0; p<padding; p++) html += `<div class="day-cell" style="opacity:0; min-height:0;"></div>`;
+                html += `<div class="week-num">${getWeekNumber(d)}</div>`;
+                for(let p=0; p<padding; p++) html += `<div class="day-cell" style="opacity:0; border:none;"></div>`;
                 lastMonth = d.getMonth();
             }
+            if (curView.includes('month') && d.getDay() === 1 && d.getDate() !== 1) {
+                html += `<div class="week-num">${getWeekNumber(d)}</div>`;
+            }
 
-            if (curView === 'week-ind') {
-                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}><div><b>${dayNames[d.getDay()]} ${d.getDate()}</b></div><div class="badge">${{o:'Ochtend',m:'Middag',n:'Nacht',v:'Vrij'}[shift]}</div></div>`;
-            } else if (curView === 'week-all') {
-                let o="-", m="-", n="-";
-                for(let p=1; p<=5; p++) {
-                    let s = getS(p.toString(), d);
-                    if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+            if (curView.startsWith('week')) {
+                let rightContent = '';
+                if (curView === 'week-ind') {
+                    rightContent = shift !== 'v' ? `<div class="badge">${NAMES[shift]}</div>` : '';
+                } else {
+                    let o="-", m="-", n="-";
+                    for(let p=1; p<=5; p++) {
+                        let s = getS(p.toString(), d);
+                        if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+                    }
+                    rightContent = `<div class="shift-row">
+                                        <span class="s-box" style="color:#e67e22">${o}</span>
+                                        <span class="s-box" style="color:#2980b9">${m}</span>
+                                        <span class="s-box" style="color:#8e44ad">${n}</span>
+                                    </div>`;
                 }
-                let hlWeek = (selP == o) ? 'hl-o' : (selP == m) ? 'hl-m' : (selP == n) ? 'hl-n' : '';
-                html += `<div class="card ${hlWeek} ${todayClass}" ${todayId}><div><b>${d.getDate()} ${months[d.getMonth()].substring(0,3)}</b></div><div class="shift-row" style="width:auto;"><span class="s-box s-o">${o}</span><span class="s-box s-m">${m}</span><span class="s-box s-n">${n}</span></div></div>`;
-            } else if (curView === 'month-all') {
+
+                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}>
+                            <div class="c-left">${dayNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}</div>
+                            <div class="c-mid">${shift !== 'v' ? TIMES[shift] : ''}</div>
+                            <div class="c-right">${rightContent}</div>
+                         </div>`;
+            } 
+            else if (curView === 'month-all') {
                 let o="-", m="-", n="-";
                 for(let p=1; p<=5; p++) {
                     let s = getS(p.toString(), d);
@@ -141,10 +211,19 @@
                 let dotO = (selP == o) ? 'dot-hl dot-o' : '';
                 let dotM = (selP == m) ? 'dot-hl dot-m' : '';
                 let dotN = (selP == n) ? 'dot-hl dot-n' : '';
-
-                html += `<div class="day-cell ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><div class="shift-row" style="font-size:12px;"><span class="s-box s-o ${dotO}">${o}</span><span class="s-box s-m ${dotM}">${m}</span><span class="s-box s-n ${dotN}">${n}</span></div></div>`;
+                html += `<div class="day-cell ${todayClass}" ${todayId}>
+                            <span class="day-num">${d.getDate()}</span>
+                            <div class="shift-row" style="font-size:11px; gap:2px;">
+                                <span class="s-box ${dotO}" style="color:#e67e22">${o}</span>
+                                <span class="s-box ${dotM}" style="color:#2980b9">${m}</span>
+                                <span class="s-box ${dotN}" style="color:#8e44ad">${n}</span>
+                            </div>
+                         </div>`;
             } else if (curView === 'month-ind') {
-                html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><span style="font-weight:900; font-size:14px;">${shift.toUpperCase()}</span></div>`;
+                html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}>
+                            <span class="day-num">${d.getDate()}</span>
+                            <span style="font-weight:900; font-size:14px;">${shift !== 'v' ? shift.toUpperCase() : ''}</span>
+                         </div>`;
             }
         }
         if (curView.includes('month')) html += `</div>`;
@@ -161,9 +240,7 @@
 
     function scrollToToday(mode) {
         const todayEl = document.getElementById('today');
-        if (todayEl) {
-            todayEl.scrollIntoView({ behavior: mode, block: 'center' });
-        }
+        if (todayEl) todayEl.scrollIntoView({ behavior: mode, block: 'center' });
     }
 
     function toggleTheme() {
