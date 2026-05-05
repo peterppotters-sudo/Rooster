@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ploegen Rooster</title>
-    <!-- Import van een dun en strak lettertype -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,83 +17,35 @@
             --t-o: #ffe082; --t-m: #bbdefb; --t-n: #d1c4e9;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* Punt 1: Dun lettertype toegepast (font-weight: 300) */
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            font-weight: 300;
-            background: var(--bg); 
-            color: var(--on-surf); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
-        }
-        
-        .content { flex: 1; overflow-y: scroll; padding: 4px; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
-        
-        /* Titels en labels houden we iets dikker voor de leesbaarheid */
+        body { font-family: 'Inter', sans-serif; font-weight: 300; background: var(--bg); color: var(--on-surf); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .content { flex: 1; overflow-y: scroll; padding: 4px; -webkit-overflow-scrolling: touch; padding-bottom: 150px; scroll-behavior: smooth; }
         .month-header { padding: 25px 8px 8px; font-weight: 900; color: var(--prim); font-size: 1.3em; border-bottom: 3px solid var(--prim); text-transform: uppercase; }
         .grid-main { display: grid; grid-template-columns: 26px repeat(7, 1fr); gap: 4px; width: 100%; margin-top: 8px; }
         .grid-label { font-size: 12px; font-weight: 900; opacity: 0.7; text-align: center; padding-bottom: 6px; }
-        
-        /* Punt 2: Afgeronde hoeken 10px toegepast op week-num en day-cell */
         .week-num { font-size: 10px; font-weight: 600; opacity: 0.5; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.06); height: 65px; border-radius: 10px; }
-        
-        .day-cell { 
-            background: var(--surf); 
-            height: 65px; 
-            border-radius: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            border: 1px solid rgba(0,0,0,0.05); 
-            padding-top: 4px; 
-            overflow: hidden; 
-        }
-        
+        .day-cell { background: var(--surf); height: 65px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border: 1px solid rgba(0,0,0,0.05); padding-top: 4px; overflow: hidden; position: relative; }
         .day-num { font-size: 16px; font-weight: 600; height: 20px; display: flex; align-items: center; margin-bottom: 2px; }
         .shift-info { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
-
-        .today-highlight { border: 3px solid #2c3e50 !important; }
-        [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
-
+        .today-highlight { border: 3px solid #2c3e50 !important; background: rgba(44, 62, 80, 0.03); }
+        [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; background: rgba(138, 180, 248, 0.05); }
         .shift-row { display: flex; gap: 2px; justify-content: center; align-items: center; width: 100%; height: 100%; }
         .s-box { position: relative; width: 14px; height: 22px; display: flex; align-items: center; justify-content: center; z-index: 1; font-size: 14px; font-weight: 900; }
         .s-o { color: var(--t-o); } .s-m { color: var(--t-m); } .s-n { color: var(--t-n); }
-        
         .dot-hl::before { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; z-index: -1; top: 0; left: -4px; }
-        .dot-o::before { background-color: var(--c-o); }
-        .dot-m::before { background-color: var(--c-m); }
-        .dot-n::before { background-color: var(--c-n); }
-
-        #todayBtn { position: fixed; bottom: 95px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 600; z-index: 100; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-family: 'Inter', sans-serif; }
-
-        .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; z-index: 150; 
-            background: #2c3e50; padding-bottom: env(safe-area-inset-bottom);
-            display: flex; height: 75px; align-items: center; justify-content: space-around;
-        }
-        
+        .dot-o::before { background-color: var(--c-o); } .dot-m::before { background-color: var(--c-m); } .dot-n::before { background-color: var(--c-n); }
+        #todayBtn { position: fixed; bottom: 95px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 600; z-index: 100; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-family: 'Inter', sans-serif; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; z-index: 150; background: #2c3e50; padding-bottom: env(safe-area-inset-bottom); display: flex; height: 75px; align-items: center; justify-content: space-around; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; height: 100%; border: none; background: none; }
         .nav-item.active { background: rgba(255,255,255,0.1); }
         .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; margin-top: 4px; opacity: 0.8; }
         .nav-icon { font-size: 22px; }
-
         .ploeg-select-wrapper { flex: 1.2; display: flex; justify-content: center; align-items: center; height: 100%; }
-        #ploegSelect { 
-            background: #ffffff; color: #2c3e50; border: none; 
-            padding: 8px 10px; border-radius: 8px; font-weight: 600; 
-            font-size: 15px; width: 90%; outline: none; font-family: 'Inter', sans-serif;
-        }
+        #ploegSelect { background: #ffffff; color: #2c3e50; border: none; padding: 8px 10px; border-radius: 8px; font-weight: 600; font-size: 15px; width: 90%; outline: none; font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body>
 
 <button id="todayBtn" onclick="scrollToToday('smooth')">VANDAAG</button>
-
 <div class="content" id="viewer"></div>
 
 <nav class="bottom-nav">
@@ -107,18 +58,14 @@
             <option value="5">Ploeg 5</option>
         </select>
     </div>
-
     <button id="btn-month-ind" class="nav-item active" onclick="setView('month-ind')">
         <span class="nav-icon">🗓️</span>
         <span class="nav-label" id="label-ind">Ploeg</span>
     </button>
-
-    <!-- Punt 3: Knoptekst definitief "Alle Ploegen" -->
     <button id="btn-month-all" class="nav-item" onclick="setView('month-all')">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Alle Ploegen</span>
     </button>
-
     <button class="nav-item" onclick="toggleTheme()">
         <span class="nav-icon">🌓</span>
         <span class="nav-label">Thema</span>
@@ -129,7 +76,6 @@
     let curView = 'month-ind';
     const REF = new Date(2026, 4, 5); 
     const OFFSETS = { "1": 28, "2": 7, "3": 21, "4": 0, "5": 14 };
-    
     const cycle = [];
     const add = (n, t) => { for(let i=0; i<n; i++) cycle.push(t); };
     add(4,'o'); add(2,'v'); add(3,'m'); add(1,'v'); add(4,'n'); add(4,'v');
@@ -153,24 +99,15 @@
         const container = document.getElementById('viewer');
         const selectEl = document.getElementById('ploegSelect');
         if (!container || !selectEl) return;
-
         const selP = selectEl.value;
-        
         try { localStorage.setItem('gekozenPloeg', selP); } catch(e) {}
-        
         const labelInd = document.getElementById('label-ind');
         if(labelInd) labelInd.innerText = 'Ploeg ' + selP;
 
         const todayStr = new Date().toDateString();
         let html = '';
-        
-        const startDate = new Date(); 
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        startDate.setDate(1); 
-        
-        const endDate = new Date(); 
-        endDate.setFullYear(endDate.getFullYear() + 2);
-        endDate.setMonth(endDate.getMonth() + 1, 0); 
+        const startDate = new Date(); startDate.setFullYear(startDate.getFullYear() - 1); startDate.setDate(1); 
+        const endDate = new Date(); endDate.setFullYear(endDate.getFullYear() + 2); endDate.setMonth(endDate.getMonth() + 1, 0); 
         
         const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
         const dayLabels = ['W','M','D','W','D','V','Z','Z'];
@@ -186,13 +123,10 @@
                 if (lastMonth !== -1) html += `</div>`;
                 html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
                 dayLabels.forEach(l => html += `<div class="grid-label">${l}</div>`);
-                
                 html += `<div class="week-num">${getWeekNumber(d)}</div>`;
-                
                 let firstDayOfMonth = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
                 let padding = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
                 for(let p=0; p<padding; p++) html += `<div style="background:transparent;"></div>`;
-                
                 lastMonth = d.getMonth();
             } else if (d.getDay() === 1) {
                 html += `<div class="week-num">${getWeekNumber(d)}</div>`;
@@ -201,7 +135,6 @@
             let cellContent = `<div class="day-cell ${todayClass}" ${todayId}>`;
             cellContent += `<span class="day-num">${d.getDate()}</span>`;
             cellContent += `<div class="shift-info">`;
-
             if (curView === 'month-all') {
                 let o="-", m="-", n="-";
                 for(let p=1; p<=5; p++) { 
@@ -211,22 +144,16 @@
                 let dotO = (selP == o) ? 'dot-hl dot-o' : '';
                 let dotM = (selP == m) ? 'dot-hl dot-m' : '';
                 let dotN = (selP == n) ? 'dot-hl dot-n' : '';
-                cellContent += `<div class="shift-row">
-                    <span class="s-box s-o ${dotO}">${o}</span>
-                    <span class="s-box s-m ${dotM}">${m}</span>
-                    <span class="s-box s-n ${dotN}">${n}</span>
-                </div>`;
+                cellContent += `<div class="shift-row"><span class="s-box s-o ${dotO}">${o}</span><span class="s-box s-m ${dotM}">${m}</span><span class="s-box s-n ${dotN}">${n}</span></div>`;
             } else {
-                if(shift !== 'v') {
-                    cellContent += `<span class="s-box s-${shift} dot-hl dot-${shift}">${shift.toUpperCase()}</span>`;
-                }
+                if(shift !== 'v') cellContent += `<span class="s-box s-${shift} dot-hl dot-${shift}">${shift.toUpperCase()}</span>`;
             }
-            
             cellContent += `</div></div>`;
             html += cellContent;
         }
         container.innerHTML = html + `</div>`;
-        setTimeout(() => scrollToToday('auto'), 50);
+        // Automatische scroll bij laden na korte vertraging
+        setTimeout(() => scrollToToday('auto'), 100);
     }
 
     function setView(v) { 
@@ -237,9 +164,17 @@
         render(); 
     }
 
-    function scrollToToday(mode) { 
+    function scrollToToday(mode = 'smooth') { 
         const todayEl = document.getElementById('today'); 
-        if (todayEl) todayEl.scrollIntoView({ behavior: mode, block: 'center' }); 
+        if (todayEl) {
+            todayEl.scrollIntoView({ behavior: mode, block: 'center' }); 
+        } else {
+            // Als het element nog niet bestaat (bijv. tijdens render), probeer het over 100ms nog eens
+            setTimeout(() => {
+                const retryEl = document.getElementById('today');
+                if(retryEl) retryEl.scrollIntoView({ behavior: mode, block: 'center' });
+            }, 100);
+        }
     }
 
     function toggleTheme() { 
@@ -253,7 +188,6 @@
             const saved = localStorage.getItem('gekozenPloeg');
             if(saved) opgeslagenPloeg = saved;
         } catch(e) {}
-        
         if (selectEl) selectEl.value = opgeslagenPloeg;
         render();
     });
