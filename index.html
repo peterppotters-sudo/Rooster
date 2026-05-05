@@ -32,14 +32,10 @@
         .today-highlight { border: 3px solid #2c3e50 !important; }
         [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
 
-        /* Tussenruimte aangepast naar 2px */
         .shift-row { display: flex; gap: 2px; justify-content: center; align-items: center; width: 100%; height: 100%; }
-        
         .s-box { position: relative; width: 14px; height: 22px; display: flex; align-items: center; justify-content: center; z-index: 1; font-size: 14px; font-weight: 900; }
-        
         .s-o { color: var(--t-o); } .s-m { color: var(--t-m); } .s-n { color: var(--t-n); }
         
-        /* Positie gecorrigeerd voor de nieuwe gap */
         .dot-hl::before { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; z-index: -1; top: 0; left: -4px; }
         .dot-o::before { background-color: var(--c-o); }
         .dot-m::before { background-color: var(--c-m); }
@@ -130,8 +126,17 @@
 
         const todayStr = new Date().toDateString();
         let html = '';
-        const startDate = new Date(); startDate.setMonth(startDate.getMonth() - 3);
-        const endDate = new Date(); endDate.setFullYear(endDate.getFullYear() + 2);
+        
+        // Startdatum forceren naar de 1e van de maand, 1 jaar terug
+        const startDate = new Date(); 
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        startDate.setDate(1); 
+        
+        // Einddatum forceren naar de laatste van de maand, 2 jaar vooruit
+        const endDate = new Date(); 
+        endDate.setFullYear(endDate.getFullYear() + 2);
+        endDate.setMonth(endDate.getMonth() + 1, 0); 
+        
         const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
         const dayLabels = ['W','M','D','W','D','V','Z','Z'];
         let lastMonth = -1;
@@ -146,10 +151,15 @@
                 if (lastMonth !== -1) html += `</div>`;
                 html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
                 dayLabels.forEach(l => html += `<div class="grid-label">${l}</div>`);
-                let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
-                let padding = firstDay === 0 ? 6 : firstDay - 1;
+                
+                // Weeknummer kolom
                 html += `<div class="week-num">${getWeekNumber(d)}</div>`;
+                
+                // Padding berekenen op basis van de 1e van de maand
+                let firstDayOfMonth = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+                let padding = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
                 for(let p=0; p<padding; p++) html += `<div style="background:transparent;"></div>`;
+                
                 lastMonth = d.getMonth();
             } else if (d.getDay() === 1) {
                 html += `<div class="week-num">${getWeekNumber(d)}</div>`;
