@@ -1,0 +1,526 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ploegen Rooster</title>
+    <style>
+        :root {
+            --bg: #f4f7f9; 
+            --surf: #ffffff; 
+            --prim: #2c3e50; 
+            --on-surf: #333333;
+            --c-o: #ffe082; 
+            --c-m: #90caf9; 
+            --c-n: #d1c4e9; 
+            --t-o: #5d4037; --t-m: #0d47a1; --t-n: #4527a0;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1c1e; 
+            --surf: #2d2f31; 
+            --prim: #8ab4f8; 
+            --on-surf: #e2e2e6;
+            --c-o: #5d4037; --c-m: #1565c0; --c-n: #4527a0;
+            --t-o: #ffe082; --t-m: #bbdefb; --t-n: #d1c4e9;
+        }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--on-surf); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: var(--surf); box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 20; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .content { flex: 1; overflow-y: scroll; padding: 12px; }
+        
+        .card { background: var(--surf); border-radius: 12px; padding: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
+        
+        .hl-o { background-color: var(--c-o) !important; color: var(--t-o) !important; }
+        .hl-m { background-color: var(--c-m) !important; color: var(--t-m) !important; }
+        .hl-n { background-color: var(--c-n) !important; color: var(--t-n) !important; }
+        
+        .today-highlight { border: 3px solid #34495e !important; box-sizing: border-box; }
+        [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
+
+        .badge { padding: 8px 16px; border-radius: 8px; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .shift-row { display: flex; gap: 12px; font-weight: 900; font-size: 17px; align-items: center; }
+        .s-o { color: #e67e22; position: relative; } 
+        .s-m { color: #2980b9; position: relative; } 
+        .s-n { color: #8e44ad; position: relative; }
+
+        /* Het highlight bolletje voor de geselecteerde ploeg */
+        .dot-hl::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            z-index: -1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .dot-o::after { background-color: var(--c-o); }
+        .dot-m::after { background-color: var(--c-m); }
+        .dot-n::after { background-color: var(--c-n); }
+
+        .month-header { padding: 25px 0 10px 5px; font-weight: bold; color: var(--prim); font-size: 1.1em; border-bottom: 2px solid var(--prim); margin-top: 10px; text-transform: uppercase; }
+        .grid-main { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 20px; margin-top: 10px; }
+        .day-cell { background: var(--surf); aspect-ratio: 1/1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+        .day-num { font-size: 11px; margin-bottom: 4px; font-weight: bold; opacity: 0.8; }
+
+        #todayBtn { position: fixed; bottom: 90px; right: 20px; background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 12px 22px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 100; text-transform: uppercase; }
+
+        nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #2c3e50; display: flex; z-index: 20; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; opacity: 0.6; cursor: pointer; color: white; }
+        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); border-top: 3px solid #ecf0f1; }
+        .nav-icon { font-size: 18px; margin-bottom: 4px; }
+        
+        select { background: var(--bg); color: var(--on-surf); border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-size: 16px; font-weight: bold; }
+    </style>
+</head>
+<body onload="init()">
+
+<header>
+    <select id="ploegSelect" onchange="render()">
+        <option value="1">Ploeg 1</option><option value="2">Ploeg 2</option><option value="3">Ploeg 3</option><option value="4" selected>Ploeg 4</option><option value="5">Ploeg 5</option>
+    </select>
+    <div style="font-weight: 900; color: #2c3e50;">ROOSTER</div>
+    <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px; cursor:pointer;">🌓</button>
+</header>
+
+<button id="todayBtn" onclick="scrollToToday('smooth')">VANDAAG</button>
+
+<div class="content" id="viewer"></div>
+
+<nav>
+    <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')"><span class="nav-icon">📅</span>Week (1)</div>
+    <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')"><span class="nav-icon">👥</span>Week (Alle)</div>
+    <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')"><span class="nav-icon">🗓️</span>Maand (1)</div>
+    <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')"><span class="nav-icon">📊</span>Maand (Alle)</div>
+</nav>
+
+<script>
+    let curView = 'week-ind';
+    const REF = new Date(2026, 4, 5); 
+    const OFFSETS = { "1": 28, "2": 7, "3": 21, "4": 0, "5": 14 };
+    const cycle = [];
+    const add = (n, t) => { for(let i=0; i<n; i++) cycle.push(t); };
+    add(4,'o'); add(2,'v'); add(3,'m'); add(1,'v'); add(4,'n'); add(4,'v');
+    add(3,'o'); add(2,'v'); add(4,'m'); add(1,'v'); add(3,'n'); add(4,'v');
+
+    function getS(p, d) {
+        const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const diff = Math.floor((target - REF) / 86400000);
+        let idx = (OFFSETS[p] + diff) % 35;
+        return cycle[idx < 0 ? idx + 35 : idx];
+    }
+
+    function render() {
+        const container = document.getElementById('viewer');
+        const selP = document.getElementById('ploegSelect').value;
+        const todayStr = new Date().toDateString();
+        let html = '';
+        
+        const startDate = new Date(); startDate.setFullYear(startDate.getFullYear() - 1);
+        const endDate = new Date(); endDate.setFullYear(endDate.getFullYear() + 2);
+        const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
+        const dayNames = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
+
+        let lastMonth = -1;
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const isToday = d.toDateString() === todayStr;
+            const shift = getS(selP, d);
+            const hlClass = (curView.includes('ind') || curView === 'week-all') ? `hl-${shift}` : '';
+            const todayClass = isToday ? 'today-highlight' : '';
+            const todayId = isToday ? 'id="today"' : '';
+
+            if (d.getMonth() !== lastMonth && curView.includes('month')) {
+                if (lastMonth !== -1) html += `</div>`;
+                html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
+                let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+                let padding = firstDay === 0 ? 6 : firstDay - 1;
+                for(let p=0; p<padding; p++) html += `<div class="day-cell" style="opacity:0"></div>`;
+                lastMonth = d.getMonth();
+            }
+
+            if (curView === 'week-ind') {
+                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}><div><b>${dayNames[d.getDay()]} ${d.getDate()}</b></div><div class="badge">${{o:'Ochtend',m:'Middag',n:'Nacht',v:'Vrij'}[shift]}</div></div>`;
+            } else if (curView === 'week-all') {
+                let o="-", m="-", n="-";
+                for(let p=1; p<=5; p++) {
+                    let s = getS(p.toString(), d);
+                    if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+                }
+                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}><div><b>${d.getDate()} ${months[d.getMonth()].substring(0,3)}</b></div><div class="shift-row"><span class="s-o">${o}</span><span class="s-m">${m}</span><span class="s-n">${n}</span></div></div>`;
+            } else if (curView === 'month-all') {
+                let o="-", m="-", n="-";
+                for(let p=1; p<=5; p++) {
+                    let s = getS(p.toString(), d);
+                    if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+                }
+                // Check of de geselecteerde ploeg vandaag een actieve dienst heeft in dit grid
+                let dotO = (selP == o) ? 'dot-hl dot-o' : '';
+                let dotM = (selP == m) ? 'dot-hl dot-m' : '';
+                let dotN = (selP == n) ? 'dot-hl dot-n' : '';
+
+                html += `<div class="day-cell ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><div class="shift-row" style="font-size:13px; gap:8px;"><span class="s-o ${dotO}">${o}</span><span class="s-m ${dotM}">${m}</span><span class="s-n ${dotN}">${n}</span></div></div>`;
+            } else if (curView === 'month-ind') {
+                html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><span style="font-weight:900; font-size:13px;">${shift.toUpperCase()}</span></div>`;
+            }
+        }
+        if (curView.includes('month')) html += `</div>`;
+        container.innerHTML = html;
+        scrollToToday('auto');
+    }
+
+    function setView(v) {
+        curView = v;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + v).classList.add('active');
+        render();
+    }
+
+    function scrollToToday(mode) {
+        const todayEl = document.getElementById('today');
+        if (todayEl) {
+            todayEl.scrollIntoView({ behavior: mode, block: 'center' });
+        }
+    }
+
+    function toggleTheme() {
+        document.body.hasAttribute('data-theme') ? document.body.removeAttribute('data-theme') : document.body.setAttribute('data-theme', 'dark');
+    }
+
+    function init() { render(); }
+</script>
+</body>
+</html>
+ class="icon-btn" onclick="toggleFS()">Volledig ⛶</button>
+                <button class="icon-btn" onclick="softReset()">Reset ⟳</button>
+            </div>
+            <button class="icon-btn full-width-btn" onclick="toggleSettings()">Lijsten ☰</button>
+        </div>
+        
+        <div class="top-column align-center">
+            <div id="timer-display">00:00</div>
+            <div class="mini-settings">
+                <span>Flits: <input type="number" id="input-ms" value="1000"> ms</span>
+                <span>Tijd: <input type="number" id="min-in" value="10"> min</span>
+            </div>
+            <button id="stop-knop" onclick="stopSpel(true)" style="display:none;">STOP SPEL</button>
+        </div>
+
+        <div class="top-column align-right">
+            <div id="reward-counter" class="stat-box">🎁: 0 / 100</div>
+            <div id="word-counter-display" class="stat-box">Woorden: 0</div>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div id="woord-groep">
+            <div id="prog-top" class="progress-wrapper"><div class="progress-bar"><span class="progress-arrow">→</span></div></div>
+            <div id="woord">---</div>
+            <div id="prog-bot" class="progress-wrapper"><div class="progress-bar"><span class="progress-arrow">→</span></div></div>
+        </div>
+        <button id="btn-herhaal" onclick="herhaalWoord()">toon woord nog een keer</button>
+        <div id="actie-container">
+            <button id="btn-goed" class="toets-btn" style="background:#238636;" onclick="toetsAntwoord(true)">GOED</button>
+            <button id="btn-fout" class="toets-btn" style="background:#da3633;" onclick="toetsAntwoord(false)">FOUT</button>
+        </div>
+    </div>
+
+    <div id="eind-scherm">
+        <div id="woorden-wolk-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.2; display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; pointer-events: none;"></div>
+        <div style="z-index: 1100; background: #1c2128; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #444; max-width: 80%;">
+            <h1 id="eind-titel">Klaar!</h1>
+            <div id="eind-tijd-display" style="color: #58a6ff; font-weight: bold; margin-bottom: 10px; font-size: 1.2rem;"></div>
+            <div id="eind-verzameling" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 15px 0; font-size: 30px;"></div>
+            <p id="eind-resultaat" style="font-size: 1.5rem;"></p>
+            <button class="start-btn-big" onclick="softReset()">Opnieuw</button>
+        </div>
+    </div>
+    
+    <div id="footer-controls">
+        <div class="mode-selector" id="mode-box">
+            <button id="m-n" class="optie-btn active" style="flex:1; border:none;" onclick="switchMode('normaal')">NORMAAL</button>
+            <button id="m-t" class="optie-btn" style="flex:1; border:none;" onclick="switchMode('toets')">TOETS</button>
+        </div>
+        <div class="button-grid" id="btn-grid-main">
+            <button class="optie-btn active" id="btn-lijst-0" onclick="setLijst(0, this)">MKM</button>
+            <button class="optie-btn" id="btn-lijst-1" onclick="setLijst(1, this)">2 Letter</button>
+            <button class="optie-btn" id="btn-lijst-2" onclick="setLijst(2, this)">B / D</button>
+            <button class="optie-btn" id="btn-lijst-3" onclick="setLijst(3, this)">Eigen lijst</button>
+        </div>
+        <button id="start-btn-main" class="start-btn-big" onclick="startNieuwWoord()">START</button>
+    </div>
+
+    <script>
+        // Uitgebreid naar 100 iconen en REX vervangen door 🦖
+        const origineleIcoontjes = [
+            "🚀", "💎", "🍎", "👾", "🦄", "🦁", "🦖", "🍦", "🍕", "⚽", 
+            "🚗", "🚁", "🎈", "🎁", "🎨", "🎸", "🦒", "🐘", "🐧", "🐢", 
+            "🍩", "🍔", " popcorn", "🍓", "🍉", "🌈", "☀️", "🌙", "⭐", "⚡", 
+            "🚲", "🚢", "🚜", "🚒", "🚑", "🛸", "🤖", "👻", "👑", "🍭", 
+            "🦋", "🐝", "🐳", "🐵", "🐼", "🥨", "🥇", " skateboard", "🎮", "🧸",
+            "🐱", "🐶", "🐰", "🦊", "🐯", "🐨", "🐷", "🐸", "🦓", "🐙",
+            "🦀", "🐠", "🐦", "🐥", "🦉", "🦇", "🦋", "🐌", "🐞", "🌻",
+            "🌲", "🌵", "🥥", "🍇", "🍍", "🍒", "🌽", "🍟", "🍪", "🍫",
+            "🧁", "🍬", "🥓", "🥩", "🍣", "🥟", "🥛", "🍹", "🏔️", "🌋",
+            "🏖️", "⛺", "🏠", "🎡", "🛹", "🎿", "🏀", "🎾", "⛳", "🎺"
+        ];
+        let beschikbareIcoontjes = [...origineleIcoontjes], verdiendeLijst = [];
+        
+        const standaardLijstTitels = ["MKM", "2 Letter", "B / D", "Eigen lijst"];
+        const standaardLijsten = [
+            "aap, bak, bal, bes, bok, bom, bos, dag, dam, den, dik, dop, gum, heg, hek, hok, hut, jas, kam, kan, kar, kat, kip, koe, kop, lam, les, lip, lot, man, mat, mes, mug, mus, nat, nek, net, oom, oog, oor, pan, pen, pop, put, rek, rem, rok, rol, sap, sok, tak, tas, ton, top, val, vat, ver, vis, vos, wal, web, weg, wig, wip, wol, zak, zee, zon",
+            "de, het, een, ga, nu, op, af, in, te, na, ja, om, zo, pa, ma, er, is, of, ik, je, we, ze, bij, uw, ei, ui",
+            "bak, bal, bas, bel, bes, bik, bil, bok, bol, bom, bos, bus, bank, berg, bril, boek, boos, boom, dag, dal, dam, dan, dat, dek, den, dik, dip, dit, doe, dof, dog, dok, dol, don, dop, dor, dot, dorp, doos, duif, dier, duur, drop, band, blad, bed, bad, bod, bied, daal, deel, doel, duin, dauw",
+            "hier, komen, jouw, eigen, woorden"
+        ];
+
+        let lijsten = [];
+
+        function initLijsten() {
+            for(let i=0; i<4; i++) {
+                const opgeslagenNaam = localStorage.getItem('leeslijst_naam_' + i);
+                const naam = opgeslagenNaam ? opgeslagenNaam : standaardLijstTitels[i];
+                document.getElementById('name-' + i).value = naam;
+                document.getElementById('btn-lijst-' + i).innerText = naam;
+
+                const opgeslagenWoorden = localStorage.getItem('leeslijst_' + i);
+                const inhoud = opgeslagenWoorden ? opgeslagenWoorden : standaardLijsten[i];
+                document.getElementById('edit-' + i).value = inhoud;
+                lijsten[i] = inhoud.split(',').map(s => s.trim()).filter(s => s !== "");
+            }
+        }
+
+        function updateList(index) {
+            const nieuweNaam = document.getElementById('name-' + index).value || standaardLijstTitels[index];
+            localStorage.setItem('leeslijst_naam_' + index, nieuweNaam);
+            document.getElementById('btn-lijst-' + index).innerText = nieuweNaam;
+
+            const raw = document.getElementById('edit-' + index).value;
+            localStorage.setItem('leeslijst_' + index, raw);
+            lijsten[index] = raw.split(',').map(s => s.trim()).filter(s => s !== "");
+        }
+
+        // Sessie reset: bewaart woorden, wist voortgang
+        function softReset() {
+            clearInterval(interval);
+            timerGestart = false;
+            woordenTeller = 0;
+            goedTeller = 0;
+            geschiedenis = [];
+            verdiendeLijst = [];
+            beschikbareIcoontjes = [...origineleIcoontjes];
+            
+            document.getElementById('reward-container').innerHTML = '';
+            document.getElementById('eind-scherm').style.display = 'none';
+            document.getElementById('woord').innerText = '---';
+            document.getElementById('timer-display').style.opacity = '0';
+            document.getElementById('stop-knop').style.display = 'none';
+            document.getElementById('start-btn-main').disabled = false;
+            document.getElementById('start-btn-main').innerText = "START";
+            
+            // UI Counters resetten
+            if(mode==='toets') {
+                document.getElementById('reward-counter').innerText = `Woord: 0 / 25`;
+            } else {
+                document.getElementById('reward-counter').innerText = `🎁: 0 / 100`;
+                document.getElementById('word-counter-display').innerText = `Woorden: 0`;
+            }
+        }
+
+        // Hard reset: wist alles uit browsergeheugen
+        function hardReset() {
+            if(confirm("LET OP: Dit wist al je eigen woordenlijsten en namen definitief! Doorgaan?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        const MAX_TOETS_WOORDEN = 25;
+        let huidigeLijstIndex = 0, mode = 'normaal', uniekeToetsLijst = [], woordenTeller = 0, goedTeller = 0;
+        let timerGestart = false, interval, resterendeTijd = 600, geschiedenis = [], startTijdMS = 0, huidigFlitsWoord = "";
+
+        function toggleSettings() { const o = document.getElementById('settings-overlay'); o.style.display = (o.style.display==='flex')?'none':'flex'; }
+        function toggleFS() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+
+        function generateStars() {
+            const c = document.getElementById('stars-container');
+            for(let i=0; i<60; i++){
+                const s = document.createElement('div');
+                s.className = `star ${['sm','md','lg'][Math.floor(Math.random()*3)]}`;
+                s.style.left = Math.random()*100+'vw'; s.style.top = Math.random()*100+'vh';
+                s.style.animationDuration = (Math.random()*3+2)+'s'; s.style.animationDelay = Math.random()*5+'s';
+                c.appendChild(s);
+            }
+        }
+
+        function switchMode(m) {
+            if(timerGestart && mode==='toets') return;
+            mode = m;
+            document.getElementById('m-n').classList.toggle('active', m==='normaal');
+            document.getElementById('m-t').classList.toggle('active', m==='toets');
+            document.getElementById('word-counter-display').style.display = (m==='toets'?'none':'block');
+            document.getElementById('reward-counter').innerText = (m==='toets') ? `Woord: 0 / ${MAX_TOETS_WOORDEN}` : `🎁: 0 / 100`;
+        }
+
+        function setLijst(index, btn) {
+            if(timerGestart && mode==='toets') return;
+            huidigeLijstIndex = index;
+            document.querySelectorAll('.button-grid .optie-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function startNieuwWoord() {
+            const lijst = lijsten[huidigeLijstIndex];
+            if(lijst.length === 0) { alert("Deze lijst is leeg! Voeg woorden toe bij instellingen."); return; }
+            
+            if(!timerGestart && mode==='toets') uniekeToetsLijst = [...lijst].sort(() => Math.random()-0.5);
+            
+            if(mode==='toets'){
+                if(uniekeToetsLijst.length===0 || woordenTeller >= MAX_TOETS_WOORDEN) { stopSpel(); return; }
+                huidigFlitsWoord = uniekeToetsLijst.pop();
+                document.getElementById('reward-counter').innerText = `Woord: ${woordenTeller+1} / ${MAX_TOETS_WOORDEN}`;
+            } else {
+                huidigFlitsWoord = lijst[Math.floor(Math.random()*lijst.length)];
+            }
+            geschiedenis.push(huidigFlitsWoord);
+            document.getElementById('btn-herhaal').style.display = 'none';
+            toonWoord(huidigFlitsWoord);
+        }
+
+        function toonWoord(w) {
+            const ms = parseInt(document.getElementById('input-ms').value) || 1000;
+            const ruler = document.getElementById('ruler'); ruler.innerText = w;
+            const wordWidth = ruler.offsetWidth;
+
+            if(!timerGestart){
+                timerGestart = true; startTijdMS = Date.now();
+                document.getElementById('stop-knop').style.display = 'block';
+                if(mode==='normaal'){
+                    resterendeTijd = (parseInt(document.getElementById('min-in').value)||10)*60;
+                    document.getElementById('timer-display').style.opacity = '1';
+                    interval = setInterval(() => { resterendeTijd--; updateTimerDisplay(); if(resterendeTijd<=0) stopSpel(); }, 1000);
+                }
+            }
+            
+            const woordEl = document.getElementById('woord');
+            woordEl.innerText = w;
+            document.getElementById('start-btn-main').disabled = true;
+            document.getElementById('btn-goed').style.display = 'none';
+            document.getElementById('btn-fout').style.display = 'none';
+
+            document.querySelectorAll('.progress-wrapper').forEach(p => {
+                p.style.visibility = 'visible'; p.style.width = (wordWidth+20)+'px';
+            });
+            document.querySelectorAll('.progress-bar').forEach(b => {
+                b.style.animation = 'none'; b.offsetHeight;
+                b.style.animation = `fillProgress ${ms}ms linear forwards`;
+            });
+
+            setTimeout(() => {
+                woordEl.innerText = ""; 
+                document.querySelectorAll('.progress-wrapper').forEach(p => p.style.visibility = 'hidden');
+                
+                if(mode==='normaal'){
+                    document.getElementById('btn-herhaal').style.display = 'block';
+                    woordenTeller++; document.getElementById('word-counter-display').innerText = `Woorden: ${woordenTeller}`;
+                    if(woordenTeller%10===0) spawnReward();
+                    document.getElementById('start-btn-main').disabled = false;
+                    document.getElementById('start-btn-main').innerText = "VOLGENDE";
+                } else {
+                    document.getElementById('btn-goed').style.display = 'block';
+                    document.getElementById('btn-fout').style.display = 'block';
+                }
+            }, ms);
+        }
+
+        function toetsAntwoord(goed) {
+            woordenTeller++; if(goed) goedTeller++;
+            document.getElementById('btn-goed').style.display = 'none';
+            document.getElementById('btn-fout').style.display = 'none';
+            document.getElementById('start-btn-main').disabled = false;
+            document.getElementById('start-btn-main').innerText = "VOLGENDE";
+            
+            if(woordenTeller >= MAX_TOETS_WOORDEN || uniekeToetsLijst.length===0) {
+                stopSpel();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const min = Math.floor(resterendeTijd/60), sec = resterendeTijd%60;
+            document.getElementById('timer-display').innerText = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        }
+
+        function herhaalWoord() { document.getElementById('btn-herhaal').style.display = 'none'; document.getElementById('woord').innerText = huidigFlitsWoord; }
+
+        function stopSpel(isH) {
+            const stopTijdMS = Date.now();
+            clearInterval(interval); document.getElementById('timer-display').style.opacity = '0';
+            
+            const verstrekenSec = Math.floor((stopTijdMS - startTijdMS) / 1000);
+            const vMin = Math.floor(verstrekenSec / 60);
+            const vSec = verstrekenSec % 60;
+            document.getElementById('eind-tijd-display').innerText = `Verstreken tijd: ${vMin.toString().padStart(2,'0')}:${vSec.toString().padStart(2,'0')}`;
+
+            document.getElementById('eind-verzameling').innerHTML = verdiendeLijst.join(' ');
+            const wolk = document.getElementById('woorden-wolk-container'); wolk.innerHTML = '';
+            geschiedenis.forEach(w => { const s = document.createElement('span'); s.style.color='#aaa'; s.style.padding='4px 8px'; s.innerText=w; wolk.appendChild(s); });
+            document.getElementById('eind-scherm').style.display = 'flex';
+            document.getElementById('eind-resultaat').innerText = mode==='toets'?`Score: ${goedTeller}/${woordenTeller}`:`Je oefende ${woordenTeller} woorden!`;
+            if(mode==='normaal' || (mode==='toets' && woordenTeller >= MAX_TOETS_WOORDEN)) startConfetti();
+        }
+
+        function spawnReward() {
+            if(beschikbareIcoontjes.length===0) return;
+            const container = document.getElementById('reward-container');
+            const i = document.createElement('div'); i.className = 'beloning-icoon';
+            
+            const gekozen = beschikbareIcoontjes.splice(Math.floor(Math.random()*beschikbareIcoontjes.length), 1)[0];
+            verdiendeLijst.push(gekozen); i.innerText = gekozen;
+            document.getElementById('reward-counter').innerText = `🎁: ${verdiendeLijst.length} / 100`;
+            
+            const noGoZone = document.getElementById('woord-groep').getBoundingClientRect();
+            const marge = 25; 
+            const icoonGrootte = 40;
+
+            const minTop = 85; 
+            const maxBottom = window.innerHeight - 185; 
+
+            let posX, posY, overlap = true;
+            let pogingen = 0;
+
+            while(overlap && pogingen < 100) {
+                pogingen++;
+                posX = Math.random() * (window.innerWidth - icoonGrootte - 20) + 10;
+                posY = Math.random() * (maxBottom - minTop) + minTop;
+
+                const icoonLinks = posX;
+                const icoonRechts = posX + icoonGrootte;
+                const icoonBoven = posY;
+                const icoonOnder = posY + icoonGrootte;
+
+                const overlapHorizontaal = icoonRechts > (noGoZone.left - marge) && icoonLinks < (noGoZone.right + marge);
+                const overlapVerticaal = icoonOnder > (noGoZone.top - marge) && icoonBoven < (noGoZone.bottom + marge);
+
+                if (!(overlapHorizontaal && overlapVerticaal)) {
+                    overlap = false; 
+                }
+            }
+            
+            i.style.left = posX + 'px';
+            i.style.top = posY + 'px';
+            container.appendChild(i);
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas'); const ctx = canvas.getContext('2d');
+            canvas.style.display = 'block'; canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const p = Array.from({length:200}, () => ({ x:Math.random()*canvas.width, y:Math.random()*canvas.height-canvas.height, w:8, h:10, color:`hsl(${Math.random()*360},100%,60%)`, vx:Math.random()*4-2, vy:Math.random()*5+2, r:Math.random()*360, rv:Math.random()*10-5 }));
+            function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); p.forEach(p => { p.y+=p.vy; p.x+=p.vx; p.r+=p.rv; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180); ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); }); requestAnimationFrame(draw); }
+            draw();
+        }
+
+        generateStars();
+        initLijsten();
+    </script>
+</body>
+</html>
