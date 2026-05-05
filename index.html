@@ -17,56 +17,78 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            width: 100vw;
+        }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
             background: var(--bg); color: var(--on-surf); 
-            margin: 0; padding: 0;
             display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden; 
+            height: 100dvh; /* Gebruikt dynamische hoogte voor mobiel */
         }
         
-        /* HERSTEL: Content moet scrollen en de rest van de ruimte vullen */
         .content { 
             flex: 1; 
             overflow-y: auto; 
-            padding: 12px 12px 160px 12px; /* Extra ruimte onderaan voor de knoppen */
+            overflow-x: hidden; /* Voorkom zijwaarts scrollen */
+            padding: 12px 12px 180px 12px; 
             -webkit-overflow-scrolling: touch; 
         }
         
-        .card { background: var(--surf); border-radius: 12px; padding: 0 16px; margin-bottom: 8px; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); min-height: 65px; flex-shrink: 0; }
-        .c-left { flex: 1.2; font-size: 15px; font-weight: 800; }
-        .c-mid { flex: 1.5; font-size: 14px; font-weight: 700; text-align: center; }
-        .c-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; }
+        /* Kaart met flexibele kolommen */
+        .card { 
+            background: var(--surf); border-radius: 12px; 
+            padding: 0 12px; margin-bottom: 8px; 
+            display: flex; align-items: center; 
+            border: 1px solid rgba(0,0,0,0.05); 
+            min-height: 65px; 
+            width: 100%;
+        }
+
+        /* min-width: 0 voorkomt dat tekst de flexbox uitduwt */
+        .c-left { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .c-mid { flex: 1.2; min-width: 0; font-size: 13px; font-weight: 700; text-align: center; }
+        .c-right { flex: 1; min-width: 0; display: flex; justify-content: flex-end; align-items: center; }
 
         .hl-o { background-color: var(--c-o) !important; color: var(--t-o) !important; }
         .hl-m { background-color: var(--c-m) !important; color: var(--t-m) !important; }
         .hl-n { background-color: var(--c-n) !important; color: var(--t-n) !important; }
         
-        .today-highlight { border: 3px solid #2c3e50 !important; }
-        [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
+        .today-highlight { border: 3px solid var(--prim) !important; }
 
-        .badge { padding: 6px 10px; border-radius: 8px; font-weight: 900; text-transform: uppercase; font-size: 11px; background: rgba(0,0,0,0.06); }
-        .shift-row { display: flex; gap: 4px; font-weight: 800; }
-        .s-box { width: 1.8em; height: 1.8em; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-weight: 900; text-transform: uppercase; font-size: 10px; background: rgba(0,0,0,0.06); white-space: nowrap; }
+        .shift-row { display: flex; gap: 2px; font-weight: 800; }
+        .s-box { width: 1.6em; height: 1.6em; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; font-size: 14px; }
         .dot-hl::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; z-index: -1; top: 0; left: 0; }
         .dot-o::before { background-color: var(--c-o); }
         .dot-m::before { background-color: var(--c-m); }
         .dot-n::before { background-color: var(--c-n); }
 
         .month-header { padding: 20px 0 8px 4px; font-weight: bold; color: var(--prim); font-size: 1.1em; border-bottom: 2px solid var(--prim); margin-top: 8px; text-transform: uppercase; }
-        .grid-main { display: grid; grid-template-columns: 30px repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; text-align: center; }
-        .grid-label { font-size: 10px; font-weight: bold; opacity: 0.5; }
-        .week-num { font-size: 10px; font-weight: bold; opacity: 0.4; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); }
-        .day-cell { background: var(--surf); min-height: 60px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
-        .day-num { font-size: 12px; font-weight: bold; opacity: 0.7; }
+        .grid-main { display: grid; grid-template-columns: 25px repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; text-align: center; }
+        .grid-label { font-size: 9px; font-weight: bold; opacity: 0.5; }
+        .week-num { font-size: 9px; font-weight: bold; opacity: 0.4; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); }
+        .day-cell { background: var(--surf); min-height: 55px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .day-num { font-size: 11px; font-weight: bold; opacity: 0.7; }
 
-        #todayBtn { position: fixed; bottom: 135px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 50px; padding: 12px 20px; font-weight: bold; z-index: 90; box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 12px; }
+        /* VANDAAG KNOP: Hoger geplaatst en hoge Z-index */
+        #todayBtn { 
+            position: fixed; bottom: 155px; right: 20px; 
+            background: #2c3e50; color: white; border: none; 
+            border-radius: 50px; padding: 12px 24px; font-weight: bold; 
+            z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+            font-size: 13px; 
+        }
 
         .bottom-nav-container {
             position: fixed; bottom: 0; width: 100%;
-            background: #2c3e50; z-index: 100;
+            background: #2c3e50; z-index: 1000;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
         }
 
         .controls-row {
@@ -76,16 +98,14 @@
         }
 
         .nav-row { display: flex; height: 65px; }
-        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: white; opacity: 0.6; cursor: pointer; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: white; opacity: 0.6; }
         .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); }
-        .nav-icon { font-size: 20px; margin-bottom: 4px; }
         
         select { 
             background: #3e5871; color: white; border: none; 
-            padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 14px;
-            outline: none; -webkit-appearance: none;
+            padding: 8px; border-radius: 8px; font-weight: bold; font-size: 14px;
         }
-        .theme-toggle { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; }
+        .theme-toggle { background: none; border: none; font-size: 22px; cursor: pointer; }
     </style>
 </head>
 <body onload="init()">
@@ -97,21 +117,17 @@
 <div class="bottom-nav-container">
     <div class="controls-row">
         <select id="ploegSelect" onchange="render()">
-            <option value="1">Ploeg 1</option>
-            <option value="2">Ploeg 2</option>
-            <option value="3">Ploeg 3</option>
-            <option value="4" selected>Ploeg 4</option>
-            <option value="5">Ploeg 5</option>
+            <option value="1">Ploeg 1</option><option value="2">Ploeg 2</option><option value="3">Ploeg 3</option><option value="4" selected>Ploeg 4</option><option value="5">Ploeg 5</option>
         </select>
-        <div style="color: white; font-weight: 900; letter-spacing: 1px; font-size: 14px;">ROOSTER</div>
+        <div style="color: white; font-weight: 900; font-size: 14px;">ROOSTER</div>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     </div>
     
     <div class="nav-row">
-        <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')"><span class="nav-icon">📅</span>Week</div>
-        <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')"><span class="nav-icon">👥</span>W-Alle</div>
-        <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')"><span class="nav-icon">🗓️</span>Maand</div>
-        <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')"><span class="nav-icon">📊</span>M-Alle</div>
+        <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')">📅<span>Week</span></div>
+        <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')">👥<span>W-Alle</span></div>
+        <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')">🗓️<span>Maand</span></div>
+        <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')">📊<span>M-Alle</span></div>
     </div>
 </div>
 
@@ -119,7 +135,7 @@
     let curView = 'week-ind';
     const REF = new Date(2026, 4, 5); 
     const OFFSETS = { "1": 28, "2": 7, "3": 21, "4": 0, "5": 14 };
-    const TIMES = { o: '06:30 - 15:30', m: '15:30 - 23:30', n: '23:30 - 06:30', v: '' };
+    const TIMES = { o: '06:30-15:30', m: '15:30-23:30', n: '23:30-06:30', v: '' };
     const NAMES = { o: 'Ochtend', m: 'Middag', n: 'Nacht', v: '' };
 
     const cycle = [];
@@ -132,14 +148,6 @@
         const diff = Math.floor((target - REF) / 86400000);
         let idx = (OFFSETS[p] + diff) % 35;
         return cycle[idx < 0 ? idx + 35 : idx];
-    }
-
-    function getWeekNumber(d) {
-        let date = new Date(d.getTime());
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-        let week1 = new Date(date.getFullYear(), 0, 4);
-        return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
     }
 
     function render() {
@@ -168,12 +176,9 @@
                 ['W','M','D','W','D','V','Z','Z'].forEach(l => html += `<div class="grid-label">${l}</div>`);
                 let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
                 let padding = firstDay === 0 ? 6 : firstDay - 1;
-                html += `<div class="week-num">${getWeekNumber(d)}</div>`;
-                for(let p=0; p<padding; p++) html += `<div class="day-cell" style="opacity:0; border:none;"></div>`;
+                html += `<div class="week-num">W</div>`;
+                for(let p=0; p<padding; p++) html += `<div></div>`;
                 lastMonth = d.getMonth();
-            }
-            if (curView.includes('month') && d.getDay() === 1 && d.getDate() !== 1) {
-                html += `<div class="week-num">${getWeekNumber(d)}</div>`;
             }
 
             if (curView.startsWith('week')) {
@@ -199,35 +204,28 @@
                             <div class="c-right">${rightContent}</div>
                          </div>`;
             } 
-            else if (curView === 'month-all') {
-                let o="-", m="-", n="-";
-                for(let p=1; p<=5; p++) {
-                    let s = getS(p.toString(), d);
-                    if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+            else if (curView.startsWith('month')) {
+                // Maandweergave logica (vereenvoudigd voor stabiliteit)
+                if (curView === 'month-ind') {
+                    html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}>
+                                <span class="day-num">${d.getDate()}</span>
+                                <span style="font-weight:900; font-size:12px;">${shift !== 'v' ? shift.toUpperCase() : ''}</span>
+                             </div>`;
+                } else {
+                    let o="-", m="-", n="-";
+                    for(let p=1; p<=5; p++) {
+                        let s = getS(p.toString(), d);
+                        if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
+                    }
+                    html += `<div class="day-cell ${todayClass}" ${todayId}>
+                                <span class="day-num">${d.getDate()}</span>
+                                <div style="font-size:9px; display:flex; gap:1px;">${o}${m}${n}</div>
+                             </div>`;
                 }
-                let dotO = (selP == o) ? 'dot-hl dot-o' : '';
-                let dotM = (selP == m) ? 'dot-hl dot-m' : '';
-                let dotN = (selP == n) ? 'dot-hl dot-n' : '';
-                html += `<div class="day-cell ${todayClass}" ${todayId}>
-                            <span class="day-num">${d.getDate()}</span>
-                            <div class="shift-row" style="font-size:11px; gap:2px;">
-                                <span class="s-box ${dotO}" style="color:#e67e22">${o}</span>
-                                <span class="s-box ${dotM}" style="color:#2980b9">${m}</span>
-                                <span class="s-box ${dotN}" style="color:#8e44ad">${n}</span>
-                            </div>
-                         </div>`;
-            } else if (curView === 'month-ind') {
-                html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}>
-                            <span class="day-num">${d.getDate()}</span>
-                            <span style="font-weight:900; font-size:14px;">${shift !== 'v' ? shift.toUpperCase() : ''}</span>
-                         </div>`;
             }
         }
-        if (curView.includes('month')) html += `</div>`;
         container.innerHTML = html;
-        
-        // Kleine delay om browser tijd te geven om de elementen te renderen voor de scroll actie
-        setTimeout(() => scrollToToday('auto'), 50);
+        setTimeout(() => scrollToToday('auto'), 100);
     }
 
     function setView(v) {
@@ -238,10 +236,8 @@
     }
 
     function scrollToToday(mode) {
-        const todayEl = document.getElementById('today');
-        if (todayEl) {
-            todayEl.scrollIntoView({ behavior: mode, block: 'center' });
-        }
+        const el = document.getElementById('today');
+        if (el) el.scrollIntoView({ behavior: mode, block: 'center' });
     }
 
     function toggleTheme() {
