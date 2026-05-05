@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ploegen Rooster</title>
     <style>
         :root {
@@ -15,129 +15,96 @@
             --c-o: #5d4037; --c-m: #1565c0; --c-n: #4527a0;
             --t-o: #ffe082; --t-m: #bbdefb; --t-n: #d1c4e9;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--on-surf); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            width: 100vw;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: var(--bg); color: var(--on-surf); 
-            display: flex; flex-direction: column; 
-            height: 100dvh; /* Gebruikt dynamische hoogte voor mobiel */
-        }
+        header { padding: 12px 16px; display: flex; justify-content: center; align-items: center; background: var(--surf); box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 20; flex-shrink: 0; }
+        .content { flex: 1; overflow-y: scroll; padding: 8px; -webkit-overflow-scrolling: touch; padding-bottom: 140px; }
         
-        .content { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: hidden; /* Voorkom zijwaarts scrollen */
-            padding: 12px 12px 180px 12px; 
-            -webkit-overflow-scrolling: touch; 
-        }
+        .card { background: var(--surf); border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,0,0,0.05); min-height: 75px; }
+        .card-info { display: flex; flex-direction: column; }
+        .card-date { font-size: 16px; font-weight: 800; }
+        .card-time { font-size: 13px; font-weight: 600; margin-top: 2px; }
         
-        /* Kaart met flexibele kolommen */
-        .card { 
-            background: var(--surf); border-radius: 12px; 
-            padding: 0 12px; margin-bottom: 8px; 
-            display: flex; align-items: center; 
-            border: 1px solid rgba(0,0,0,0.05); 
-            min-height: 65px; 
-            width: 100%;
-        }
-
-        /* min-width: 0 voorkomt dat tekst de flexbox uitduwt */
-        .c-left { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .c-mid { flex: 1.2; min-width: 0; font-size: 13px; font-weight: 700; text-align: center; }
-        .c-right { flex: 1; min-width: 0; display: flex; justify-content: flex-end; align-items: center; }
-
         .hl-o { background-color: var(--c-o) !important; color: var(--t-o) !important; }
         .hl-m { background-color: var(--c-m) !important; color: var(--t-m) !important; }
         .hl-n { background-color: var(--c-n) !important; color: var(--t-n) !important; }
         
-        .today-highlight { border: 3px solid var(--prim) !important; }
+        .today-highlight { border: 3px solid #34495e !important; }
+        [data-theme="dark"] .today-highlight { border-color: var(--prim) !important; }
 
-        .badge { padding: 4px 8px; border-radius: 6px; font-weight: 900; text-transform: uppercase; font-size: 10px; background: rgba(0,0,0,0.06); white-space: nowrap; }
-        .shift-row { display: flex; gap: 2px; font-weight: 800; }
-        .s-box { width: 1.6em; height: 1.6em; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; font-size: 14px; }
-        .dot-hl::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; z-index: -1; top: 0; left: 0; }
+        .badge { padding: 6px 12px; border-radius: 8px; font-weight: 900; text-transform: uppercase; font-size: 12px; }
+        
+        .shift-row { display: flex; gap: 4px; font-weight: 800; font-size: 14px; align-items: center; justify-content: center; }
+        .s-box { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+        .s-o { color: #e67e22; } .s-m { color: #2980b9; } .s-n { color: #8e44ad; }
+
+        .dot-hl::before { 
+            content: ''; position: absolute; width: 22px; height: 22px; 
+            border-radius: 50%; z-index: -1; top: 0; left: 0; 
+        }
         .dot-o::before { background-color: var(--c-o); }
         .dot-m::before { background-color: var(--c-m); }
         .dot-n::before { background-color: var(--c-n); }
 
         .month-header { padding: 20px 0 8px 4px; font-weight: bold; color: var(--prim); font-size: 1.1em; border-bottom: 2px solid var(--prim); margin-top: 8px; text-transform: uppercase; }
-        .grid-main { display: grid; grid-template-columns: 25px repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; text-align: center; }
-        .grid-label { font-size: 9px; font-weight: bold; opacity: 0.5; }
-        .week-num { font-size: 9px; font-weight: bold; opacity: 0.4; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); }
-        .day-cell { background: var(--surf); min-height: 55px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
-        .day-num { font-size: 11px; font-weight: bold; opacity: 0.7; }
-
-        /* VANDAAG KNOP: Hoger geplaatst en hoge Z-index */
-        #todayBtn { 
-            position: fixed; bottom: 155px; right: 20px; 
-            background: #2c3e50; color: white; border: none; 
-            border-radius: 50px; padding: 12px 24px; font-weight: bold; 
-            z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
-            font-size: 13px; 
-        }
-
-        .bottom-nav-container {
-            position: fixed; bottom: 0; width: 100%;
-            background: #2c3e50; z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .controls-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 16px; background: rgba(255,255,255,0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .nav-row { display: flex; height: 65px; }
-        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: white; opacity: 0.6; }
-        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); }
         
-        select { 
-            background: #3e5871; color: white; border: none; 
-            padding: 8px; border-radius: 8px; font-weight: bold; font-size: 14px;
-        }
-        .theme-toggle { background: none; border: none; font-size: 22px; cursor: pointer; }
+        .grid-main { display: grid; grid-template-columns: 25px repeat(7, 1fr); gap: 2px; margin-bottom: 16px; margin-top: 8px; width: 100%; }
+        .grid-label { font-size: 10px; font-weight: bold; opacity: 0.5; text-align: center; padding-bottom: 4px; }
+        .week-num { font-size: 10px; font-weight: bold; opacity: 0.4; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.03); border-radius: 4px; height: 58px; }
+        
+        .day-cell { background: var(--surf); height: 58px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .day-num { font-size: 11px; margin-bottom: 2px; font-weight: bold; opacity: 0.7; }
+
+        /* Floating Action Button (Vandaag) */
+        #todayBtn { position: fixed; bottom: 145px; right: 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; z-index: 100; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        /* Bottom Controls Wrapper */
+        .bottom-nav-wrapper { position: fixed; bottom: 0; width: 100%; z-index: 150; background: #2c3e50; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Settings Bar (Ploeg & Thema) */
+        .settings-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.2); }
+        .settings-bar select { background: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 14px; }
+        
+        /* Nav Bar (Tabs) */
+        .nav-tabs { height: 65px; display: flex; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: white; opacity: 0.6; cursor: pointer; }
+        .nav-btn.active { opacity: 1; background: rgba(255,255,255,0.1); border-top: 3px solid #ecf0f1; }
+        .nav-icon { font-size: 18px; margin-bottom: 2px; }
     </style>
 </head>
 <body onload="init()">
 
-<div class="content" id="viewer"></div>
+<header>
+    <div style="font-weight: 900; color: #2c3e50; letter-spacing: 2px;">PLOEGENDIENST</div>
+</header>
 
 <button id="todayBtn" onclick="scrollToToday('smooth')">VANDAAG</button>
 
-<div class="bottom-nav-container">
-    <div class="controls-row">
+<div class="content" id="viewer"></div>
+
+<div class="bottom-nav-wrapper">
+    <div class="settings-bar">
         <select id="ploegSelect" onchange="render()">
             <option value="1">Ploeg 1</option><option value="2">Ploeg 2</option><option value="3">Ploeg 3</option><option value="4" selected>Ploeg 4</option><option value="5">Ploeg 5</option>
         </select>
-        <div style="color: white; font-weight: 900; font-size: 14px;">ROOSTER</div>
-        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:20px; cursor:pointer;">🌓</button>
     </div>
-    
-    <div class="nav-row">
-        <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')">📅<span>Week</span></div>
-        <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')">👥<span>W-Alle</span></div>
-        <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')">🗓️<span>Maand</span></div>
-        <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')">📊<span>M-Alle</span></div>
-    </div>
+    <nav class="nav-tabs">
+        <div id="btn-week-ind" class="nav-btn active" onclick="setView('week-ind')"><span class="nav-icon">📅</span>Week</div>
+        <div id="btn-week-all" class="nav-btn" onclick="setView('week-all')"><span class="nav-icon">👥</span>W-Alle</div>
+        <div id="btn-month-ind" class="nav-btn" onclick="setView('month-ind')"><span class="nav-icon">🗓️</span>Maand</div>
+        <div id="btn-month-all" class="nav-btn" onclick="setView('month-all')"><span class="nav-icon">📊</span>M-Alle</div>
+    </nav>
 </div>
 
 <script>
     let curView = 'week-ind';
     const REF = new Date(2026, 4, 5); 
     const OFFSETS = { "1": 28, "2": 7, "3": 21, "4": 0, "5": 14 };
-    const TIMES = { o: '06:30-15:30', m: '15:30-23:30', n: '23:30-06:30', v: '' };
+    const TIMES = { o: '06:30 - 15:30', m: '15:30 - 23:30', n: '23:30 - 06:30' };
     const NAMES = { o: 'Ochtend', m: 'Middag', n: 'Nacht', v: '' };
-
+    
     const cycle = [];
     const add = (n, t) => { for(let i=0; i<n; i++) cycle.push(t); };
     add(4,'o'); add(2,'v'); add(3,'m'); add(1,'v'); add(4,'n'); add(4,'v');
@@ -150,6 +117,13 @@
         return cycle[idx < 0 ? idx + 35 : idx];
     }
 
+    function getWeekNumber(d) {
+        let tempDate = new Date(d.getTime());
+        tempDate.setDate(tempDate.getDate() + 4 - (tempDate.getDay() || 7));
+        let yearStart = new Date(tempDate.getFullYear(), 0, 1);
+        return Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
+    }
+
     function render() {
         const container = document.getElementById('viewer');
         const selP = document.getElementById('ploegSelect').value;
@@ -158,8 +132,9 @@
         
         const startDate = new Date(); startDate.setFullYear(startDate.getFullYear() - 1);
         const endDate = new Date(); endDate.setFullYear(endDate.getFullYear() + 1);
-        const months = ["Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
+        const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
         const dayNames = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
+        const dayLabels = ['W','M','D','W','D','V','Z','Z'];
 
         let lastMonth = -1;
 
@@ -170,80 +145,47 @@
             const todayClass = isToday ? 'today-highlight' : '';
             const todayId = isToday ? 'id="today"' : '';
 
-            if (d.getMonth() !== lastMonth && curView.includes('month')) {
-                if (lastMonth !== -1) html += `</div>`;
-                html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
-                ['W','M','D','W','D','V','Z','Z'].forEach(l => html += `<div class="grid-label">${l}</div>`);
-                let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
-                let padding = firstDay === 0 ? 6 : firstDay - 1;
-                html += `<div class="week-num">W</div>`;
-                for(let p=0; p<padding; p++) html += `<div></div>`;
-                lastMonth = d.getMonth();
+            if (curView.includes('month')) {
+                if (d.getMonth() !== lastMonth) {
+                    if (lastMonth !== -1) html += `</div>`;
+                    html += `<div class="month-header">${months[d.getMonth()]} ${d.getFullYear()}</div><div class="grid-main">`;
+                    dayLabels.forEach(l => html += `<div class="grid-label">${l}</div>`);
+                    let firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+                    let padding = firstDay === 0 ? 6 : firstDay - 1;
+                    html += `<div class="week-num">${getWeekNumber(d)}</div>`;
+                    for(let p=0; p<padding; p++) html += `<div style="background:transparent; border:none;"></div>`;
+                    lastMonth = d.getMonth();
+                } else if (d.getDay() === 1) {
+                    html += `<div class="week-num">${getWeekNumber(d)}</div>`;
+                }
             }
 
-            if (curView.startsWith('week')) {
-                let rightContent = '';
-                if (curView === 'week-ind') {
-                    rightContent = shift !== 'v' ? `<div class="badge">${NAMES[shift]}</div>` : '';
-                } else {
-                    let o="-", m="-", n="-";
-                    for(let p=1; p<=5; p++) {
-                        let s = getS(p.toString(), d);
-                        if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
-                    }
-                    rightContent = `<div class="shift-row">
-                                        <span class="s-box" style="color:#e67e22">${o}</span>
-                                        <span class="s-box" style="color:#2980b9">${m}</span>
-                                        <span class="s-box" style="color:#8e44ad">${n}</span>
-                                    </div>`;
-                }
-
-                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}>
-                            <div class="c-left">${dayNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}</div>
-                            <div class="c-mid">${shift !== 'v' ? TIMES[shift] : ''}</div>
-                            <div class="c-right">${rightContent}</div>
-                         </div>`;
-            } 
-            else if (curView.startsWith('month')) {
-                // Maandweergave logica (vereenvoudigd voor stabiliteit)
-                if (curView === 'month-ind') {
-                    html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}>
-                                <span class="day-num">${d.getDate()}</span>
-                                <span style="font-weight:900; font-size:12px;">${shift !== 'v' ? shift.toUpperCase() : ''}</span>
-                             </div>`;
-                } else {
-                    let o="-", m="-", n="-";
-                    for(let p=1; p<=5; p++) {
-                        let s = getS(p.toString(), d);
-                        if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p;
-                    }
-                    html += `<div class="day-cell ${todayClass}" ${todayId}>
-                                <span class="day-num">${d.getDate()}</span>
-                                <div style="font-size:9px; display:flex; gap:1px;">${o}${m}${n}</div>
-                             </div>`;
-                }
+            if (curView === 'week-ind') {
+                html += `<div class="card ${hlClass} ${todayClass}" ${todayId}><div class="card-info"><span class="card-date">${dayNames[d.getDay()]} ${d.getDate()}</span>${shift !== 'v' ? `<span class="card-time">${TIMES[shift]}</span>` : ''}</div>${shift !== 'v' ? `<div class="badge">${NAMES[shift]}</div>` : ''}</div>`;
+            } else if (curView === 'week-all') {
+                let o="-", m="-", n="-";
+                for(let p=1; p<=5; p++) { let s = getS(p.toString(), d); if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p; }
+                let hlWeek = (selP == o) ? 'hl-o' : (selP == m) ? 'hl-m' : (selP == n) ? 'hl-n' : '';
+                html += `<div class="card ${hlWeek} ${todayClass}" ${todayId}><div class="card-info"><span class="card-date">${d.getDate()} ${months[d.getMonth()].substring(0,3)}</span>${shift !== 'v' ? `<span class="card-time">${TIMES[shift]}</span>` : ''}</div><div class="shift-row"><span class="s-box s-o">${o}</span><span class="s-box s-m">${m}</span><span class="s-box s-n">${n}</span></div></div>`;
+            } else if (curView === 'month-all') {
+                let o="-", m="-", n="-";
+                for(let p=1; p<=5; p++) { let s = getS(p.toString(), d); if(s==='o') o=p; if(s==='m') m=p; if(s==='n') n=p; }
+                let dotO = (selP == o) ? 'dot-hl dot-o' : '';
+                let dotM = (selP == m) ? 'dot-hl dot-m' : '';
+                let dotN = (selP == n) ? 'dot-hl dot-n' : '';
+                html += `<div class="day-cell ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><div class="shift-row"><span class="s-box s-o ${dotO}">${o}</span><span class="s-box s-m ${dotM}">${m}</span><span class="s-box s-n ${dotN}">${n}</span></div></div>`;
+            } else if (curView === 'month-ind') {
+                html += `<div class="day-cell ${hlClass} ${todayClass}" ${todayId}><span class="day-num">${d.getDate()}</span><span style="font-weight:900; font-size:13px;">${shift !== 'v' ? shift.toUpperCase() : ''}</span></div>`;
             }
         }
+        if (curView.includes('month')) html += `</div>`;
         container.innerHTML = html;
-        setTimeout(() => scrollToToday('auto'), 100);
+        scrollToToday('auto');
     }
 
-    function setView(v) {
-        curView = v;
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + v).classList.add('active');
-        render();
-    }
-
-    function scrollToToday(mode) {
-        const el = document.getElementById('today');
-        if (el) el.scrollIntoView({ behavior: mode, block: 'center' });
-    }
-
-    function toggleTheme() {
-        document.body.hasAttribute('data-theme') ? document.body.removeAttribute('data-theme') : document.body.setAttribute('data-theme', 'dark');
-    }
-
+    function setView(v) { curView = v; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + v).classList.add('active'); render(); }
+    function scrollToToday(mode) { const todayEl = document.getElementById('today'); if (todayEl) todayEl.scrollIntoView({ behavior: mode, block: 'center' }); }
+    function toggleTheme() { document.body.hasAttribute('data-theme') ? document.body.removeAttribute('data-theme') : document.body.setAttribute('data-theme', 'dark'); }
     function init() { render(); }
 </script>
 </body>
