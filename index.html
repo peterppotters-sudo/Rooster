@@ -14,7 +14,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&&amp;isplay=swap" rel="stylesheet">
 
     <style>
 
@@ -339,8 +339,11 @@
         .today-highlight {
             border: 2px solid var(--prim) !important;
             background: rgba(138, 180, 248, 0.10);
+            
         }
-
+        .day-cell.today-highlight.expanded {
+        background: var(--surf) !important;
+        }
         .shift-row {
             display: flex;
             gap: 1px;
@@ -448,51 +451,18 @@
 }
 
 .nav-label {
-    font-size: 10px;
+    font-size: 16px;
     font-weight: 500;
     margin-top: 2px;
     text-align: center;
     line-height: 1.1;
     white-space: nowrap;
 }
-
-.nav-icon { font-size: 18px; line-height: 1; }
-
-      
         .theme-icon {
-            font-size: 20px;
+            font-size: 35px;
             font-weight: 500;
             letter-spacing: -1px;
         }
-
-        .ploeg-cycle-wrapper {
-            flex: 1.35;
-            min-width: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            padding: 0 4px;
-        }
-
-        #ploegCycleBtn {
-    width: 100%;
-    border: 1px solid rgba(255, 255, 255, 0.95);
-    border-radius: 14px;
-    padding: 7px 8px;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: 'Roboto', sans-serif;
-    background: rgba(255, 255, 255, 0.75);
-    color: #2c3135;
-}
-
-[data-theme="dark"] #ploegCycleBtn {
-    background: rgba(138, 180, 248, 0.15);
-    border: 1px solid rgba(138, 180, 248, 0.35);
-    color: #c8dff8;
-}
-
 
         /* ── Responsive ──────────────────────────────────────────────────── */
 
@@ -505,7 +475,6 @@
             .dot-hl::before { width: 12px; height: 22px; border-radius: 8px; }
             .month-header { font-size: 1.1em; }
             .nav-label { font-size: 9px; }
-            #ploegCycleBtn { font-size: 12px; padding: 6px; }
             .expanded-time { font-size: 13px; }
             .expanded-date { font-size: 10px; }
             .expanded-shift-badge { width: 30px; height: 30px; font-size: 14px; }
@@ -530,28 +499,21 @@
 <div class="content" id="viewer"></div>
 
 <nav class="bottom-nav">
-
     <button class="nav-item" onclick="toggleTheme()">
         <span class="nav-icon theme-icon">◐</span>
-
     </button>
 
-    <button id="btn-month-ind" class="nav-item active" onclick="setView('month-ind')">
-        <span class="nav-label" id="label-ind">Ploeg</span>
+    <button id="btn-month-ind" class="nav-item active" onclick="handlePloegClick()">
+        <span class="nav-label" id="label-ind">Ploeg 1</span>
     </button>
-
-    <div class="ploeg-cycle-wrapper">
-        <button id="ploegCycleBtn" type="button" onclick="nextPloeg()">Ploeg 1</button>
-    </div>
 
     <button id="btn-month-all" class="nav-item" onclick="setView('month-all')">
-        <span class="nav-label">Alle ploegen</span>
+        <span class="nav-label">Alle<br>Ploegen</span>
     </button>
 
     <button class="nav-item" onclick="scrollToToday('smooth')">
         <span class="nav-label">Vandaag</span>
     </button>
-
 </nav>
 
 <script>
@@ -600,13 +562,18 @@
         if (btn) btn.innerText = 'Ploeg ' + selectedPloeg;
     }
 
-    function nextPloeg() {
+    function handlePloegClick() {
+    if (curView === 'month-ind') {
+        // We zijn al in het ploeg-scherm, dus wissel naar de volgende ploeg
         selectedPloeg = (parseInt(selectedPloeg, 10) % 5 + 1).toString();
         try { localStorage.setItem('gekozenPloeg', selectedPloeg); } catch(e) {}
-        updatePloegButtonLabel();
         expandedCellId = null;
-        render();
+        render(); 
+    } else {
+        // We kwamen van een ander scherm, ga nu naar het ploeg-scherm
+        setView('month-ind');
     }
+}
 
     function basisWorker35(idx35) {
         if (idx35 >= 0  && idx35 <= 3)  return idx35 <= 1 ? 1 : 2;
@@ -853,18 +820,20 @@
 }
 
     function setView(v) {
-        curView = v;
-        expandedCellId = null;
-        try { localStorage.setItem('gekozenWeergave', curView); } catch(e) {}
+    curView = v;
+    expandedCellId = null;
+    try { localStorage.setItem('gekozenWeergave', curView); } catch(e) {}
 
-        document.querySelectorAll('.bottom-nav .nav-item').forEach(b => {
-            if (b.id === 'btn-month-ind' || b.id === 'btn-month-all')
-                b.classList.remove('active');
-        });
-        const btn = document.getElementById('btn-' + v);
-        if (btn) btn.classList.add('active');
-        render();
+    // Update actieve staat van de knoppen
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    
+    if (v === 'month-ind') {
+        document.getElementById('btn-month-ind').classList.add('active');
+    } else if (v === 'month-all') {
+        document.getElementById('btn-month-all').classList.add('active');
     }
+    render();
+}
 
     function toggleTheme() {
         const isDark = document.body.hasAttribute('data-theme');
