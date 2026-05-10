@@ -801,14 +801,20 @@
     }
 
     function scrollToToday(behavior = 'smooth') {
-        const todayCell = document.querySelector('[data-today="true"]');
-        const container = document.getElementById('viewer');
-        if (todayCell && container) {
-            const wrapper   = todayCell.closest('.cell-wrapper') || todayCell;
-            const scrollPos = wrapper.offsetTop - (container.offsetHeight / 2) + (wrapper.offsetHeight / 2);
-            container.scrollTo({ top: scrollPos, behavior });
-        }
+    const todayCell = document.querySelector('[data-today="true"]');
+    const container = document.getElementById('viewer');
+    if (todayCell && container) {
+        const wrapper = todayCell.closest('.cell-wrapper') || todayCell;
+        const containerRect = container.getBoundingClientRect();
+        const wrapperRect   = wrapper.getBoundingClientRect();
+        const scrollPos = container.scrollTop
+                        + wrapperRect.top
+                        - containerRect.top
+                        - (container.offsetHeight / 2)
+                        + (wrapper.offsetHeight / 2);
+        container.scrollTo({ top: scrollPos, behavior });
     }
+}
 
     function setView(v) {
         curView = v;
